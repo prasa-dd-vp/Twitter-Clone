@@ -217,73 +217,82 @@ let loginUser input =
     response
 
 let followUser input =
-	let mutable response = ""
-	if input.value <> input.userID then
-		if followersMap.ContainsKey input.value then
-			if not (followersMap.[input.value].Contains input.userID) then
-				let mutable followersSet = followersMap.[input.value]
-				followersSet <- Set.add input.userID followersSet
-				followersMap <- Map.remove input.value followersMap
-				followersMap <- Map.add input.value followersSet followersMap
-				feedActor <! Subscribers(input.userID,input.value) 
-				let res: ResponseType = {userID = input.userID; 
+    let mutable response = ""
+    if input.value <> input.userID then
+        if followersMap.ContainsKey input.value then
+            if not (followersMap.[input.value].Contains input.userID) then
+                let mutable followersSet = followersMap.[input.value]
+                followersSet <- Set.add input.userID followersSet
+                followersMap <- Map.remove input.value followersMap
+                followersMap <- Map.add input.value followersSet followersMap
+                feedActor <! Subscribers(input.userID,input.value) 
+                let res: ResponseType = {userID = input.userID; 
                                             service="Follow"; 
                                             message = sprintf "You started following %s!" input.value; 
                                             code = "OK"}
-				response <- res |> Json.toJson |> System.Text.Encoding.UTF8.GetString
-			else 
-				let res: ResponseType = {userID = input.userID; 
+                response <- res |> Json.toJson |> System.Text.Encoding.UTF8.GetString
+            else 
+                let res: ResponseType = {userID = input.userID; 
                                         service="Follow"; 
                                         message = sprintf "You are already following %s!" input.value; 
                                         code = "FAIL"}
-				response <- res |> Json.toJson |> System.Text.Encoding.UTF8.GetString      
-		else  
-			let res: ResponseType = {userID = input.userID; 
+                response <- res |> Json.toJson |> System.Text.Encoding.UTF8.GetString      
+        else  
+            let res: ResponseType = {userID = input.userID; 
                                     service="Follow"; 
                                     message = sprintf "Invalid request, No such user (%s)." input.value; 
                                     code = "FAIL"}
-			response <- res |> Json.toJson |> System.Text.Encoding.UTF8.GetString
-	else
-		let res: ResponseType = {userID = input.userID; 
+            response <- res |> Json.toJson |> System.Text.Encoding.UTF8.GetString
+    else
+        let res: ResponseType = {userID = input.userID; 
                                 service="Follow"; 
                                 message = sprintf "You cannot follow yourself."; 
                                 code = "FAIL"}
-		response <- res |> Json.toJson |> System.Text.Encoding.UTF8.GetString    
-	// printfn "follow response: %s" response
-	response
+        response <- res |> Json.toJson |> System.Text.Encoding.UTF8.GetString    
+    // printfn "follow response: %s" response
+    response
     
 let tweetUser userInput =
-    let mutable resp = ""
+    let mutable response = ""
     if registeredUsersMap.ContainsKey userInput.userID then
         let mutable hashTag = ""
         let mutable mentionedUser = ""
-        let parsed = userInput.value.Split ' '
-        // printfn "parsed = %A" parsed
-        for parse in parsed do
-            if parse.Length > 0 then
-                if parse.[0] = '#' then
-                    hashTag <- parse.[1..(parse.Length-1)]
-                else if parse.[0] = '@' then
-                    mentionedUser <- parse.[1..(parse.Length-1)]
+        let words = userInput.value.Split ' '
+        // printfn "words = %A" words
+        for word in words do
+            if word.Length > 0 then
+                if word.[0] = '#' then
+                    hashTag <- word.[1..(word.Length-1)]
+                else if word.[0] = '@' then
+                    mentionedUser <- word.[1..(word.Length-1)]
 
         if mentionedUser <> "" then
             if registeredUsersMap.ContainsKey mentionedUser then
                 if not (mentionsMap.ContainsKey mentionedUser) then
-                        mentionsMap <- Map.add mentionedUser List.empty mentionsMap
+                    mentionsMap <- Map.add mentionedUser List.empty mentionsMap
                 let mutable mList = mentionsMap.[mentionedUser]
                 mList <- (sprintf "%s tweeted:^%s" userInput.userID userInput.value) :: mList
                 mentionsMap <- Map.remove mentionedUser mentionsMap
                 mentionsMap <- Map.add mentionedUser mList mentionsMap
                 feedActor <! UpdateFeeds(userInput.userID,userInput.value,"Tweet")
-                let rectype: ResponseType = {userID = userInput.userID; service="Tweet"; message = (sprintf "%s tweeted:^%s" userInput.userID userInput.value); code = "OK"}
-                resp <- rectype |> Json.toJson |> System.Text.Encoding.UTF8.GetString
+                let res: ResponseType = {userID = userInput.userID; 
+                                        service="Tweet"; 
+                                        message = (sprintf "%s tweeted:^%s" userInput.userID userInput.value); 
+                                        code = "OK"}
+                response <- res |> Json.toJson |> System.Text.Encoding.UTF8.GetString
             else
-                let rectype: ResponseType = {userID = userInput.userID; service="Tweet"; message = sprintf "Invalid request, mentioned user (%s) is not registered" mentionedUser; code = "FAIL"}
-                resp <- rectype |> Json.toJson |> System.Text.Encoding.UTF8.GetString
+                let res: ResponseType = {userID = userInput.userID; 
+                                        service="Tweet"; 
+                                        message = sprintf "Invalid request, mentioned user (%s) is not registered" mentionedUser; 
+                                        code = "FAIL"}
+                response <- res |> Json.toJson |> System.Text.Encoding.UTF8.GetString
         else
             feedActor <! UpdateFeeds(userInput.userID,userInput.value,"Tweet")
-            let rectype: ResponseType = {userID = userInput.userID; service="Tweet"; message = (sprintf "%s tweeted:^%s" userInput.userID userInput.value); code = "OK"}
-            resp <- rectype |> Json.toJson |> System.Text.Encoding.UTF8.GetString
+            let res: ResponseType = {userID = userInput.userID; 
+                                    service="Tweet"; 
+                                    message = (sprintf "%s tweeted:^%s" userInput.userID userInput.value); 
+                                    code = "OK"}
+            response <- res |> Json.toJson |> System.Text.Encoding.UTF8.GetString
 
         if hashTag <> "" then
             if not (hashTagsMap.ContainsKey hashTag) then
@@ -293,9 +302,12 @@ let tweetUser userInput =
             hashTagsMap <- Map.remove hashTag hashTagsMap
             hashTagsMap <- Map.add hashTag tList hashTagsMap
     else  
-        let rectype: ResponseType = {userID = userInput.userID; service="Tweet"; message = sprintf "Invalid request by user %s, Not registered yet!" userInput.userID; code = "FAIL"}
-        resp <- rectype |> Json.toJson |> System.Text.Encoding.UTF8.GetString
-    resp
+        let res: ResponseType = {userID = userInput.userID; 
+                                service="Tweet"; 
+                                message = sprintf "Invalid request by user %s, Not registered yet!" userInput.userID; 
+                                code = "FAIL"}
+        response <- res |> Json.toJson |> System.Text.Encoding.UTF8.GetString
+    response
 
 let retweetUser userInput =
     let mutable resp = ""
@@ -304,8 +316,8 @@ let retweetUser userInput =
         let rectype: ResponseType = {userID = userInput.userID; service="ReTweet"; message = (sprintf "%s re-tweeted:^%s" userInput.userID userInput.value); code = "OK"}
         resp <- rectype |> Json.toJson |> System.Text.Encoding.UTF8.GetString
     else  
-        let rectype: ResponseType = {userID = userInput.userID; service="ReTweet"; message = sprintf "Invalid request by user %s, Not registered yet!" userInput.userID; code = "FAIL"}
-        resp <- rectype |> Json.toJson |> System.Text.Encoding.UTF8.GetString
+        let res: ResponseType = {userID = userInput.userID; service="ReTweet"; message = sprintf "Invalid request by user %s, Not registered yet!" userInput.userID; code = "FAIL"}
+        resp <- res |> Json.toJson |> System.Text.Encoding.UTF8.GetString
     resp
 
 let query (userInput:string) = 
@@ -322,11 +334,11 @@ let query (userInput:string) =
                     size <- mapData.Length
                 for i in [0..(size-1)] do
                     mentionsString <- mentionsString + "-" + mapData.[i]
-                let rectype: ResponseType = {userID = ""; service="Query"; message = mentionsString; code = "OK"}
-                resp <- Json.serialize rectype
+                let res: ResponseType = {userID = ""; service="Query"; message = mentionsString; code = "OK"}
+                resp <- Json.serialize res
             else 
-                let rectype: ResponseType = {userID = ""; service="Query"; message = "-No tweets found for the mentioned user"; code = "OK"}
-                resp <- Json.serialize rectype
+                let res: ResponseType = {userID = ""; service="Query"; message = "-No tweets found for the mentioned user"; code = "OK"}
+                resp <- Json.serialize res
         else
             let searchKey = userInput
             if hashTagsMap.ContainsKey searchKey then
@@ -335,14 +347,14 @@ let query (userInput:string) =
                         size <- mapData.Length
                 for i in [0..(size-1)] do
                         tagsstring <- tagsstring + "-" + mapData.[i]
-                let rectype: ResponseType = {userID = ""; service="Query"; message = tagsstring; code = "OK"}
-                resp <- Json.serialize rectype
+                let res: ResponseType = {userID = ""; service="Query"; message = tagsstring; code = "OK"}
+                resp <- Json.serialize res
             else 
-                let rectype: ResponseType = {userID = ""; service="Query"; message = "-No tweets found for the hashtag"; code = "OK"}
-                resp <- Json.serialize rectype
+                let res: ResponseType = {userID = ""; service="Query"; message = "-No tweets found for the hashtag"; code = "OK"}
+                resp <- Json.serialize res
     else
-        let rectype: ResponseType = {userID = ""; service="Query"; message = "Type something to search"; code = "FAIL"}
-        resp <- Json.serialize rectype
+        let res: ResponseType = {userID = ""; service="Query"; message = "Type something to search"; code = "FAIL"}
+        resp <- Json.serialize res
     resp
 
 
