@@ -216,29 +216,41 @@ let loginUser input =
         response <- res |> Json.toJson |> System.Text.Encoding.UTF8.GetString
     response
 
-let followUser userInput =
-    let mutable resp = ""
-    if userInput.value <> userInput.userID then
-        if followersMap.ContainsKey userInput.value then
-            if not (followersMap.[userInput.value].Contains userInput.userID) then
-                let mutable tempset = followersMap.[userInput.value]
-                tempset <- Set.add userInput.userID tempset
-                followersMap <- Map.remove userInput.value followersMap
-                followersMap <- Map.add userInput.value tempset followersMap
-                feedActor <! Subscribers(userInput.userID,userInput.value) 
-                let rectype: ResponseType = {userID = userInput.userID; service="Follow"; message = sprintf "You started following %s!" userInput.value; code = "OK"}
-                resp <- rectype |> Json.toJson |> System.Text.Encoding.UTF8.GetString
-            else 
-                let rectype: ResponseType = {userID = userInput.userID; service="Follow"; message = sprintf "You are already following %s!" userInput.value; code = "FAIL"}
-                resp <- rectype |> Json.toJson |> System.Text.Encoding.UTF8.GetString      
-        else  
-            let rectype: ResponseType = {userID = userInput.userID; service="Follow"; message = sprintf "Invalid request, No such user (%s)." userInput.value; code = "FAIL"}
-            resp <- rectype |> Json.toJson |> System.Text.Encoding.UTF8.GetString
-    else
-        let rectype: ResponseType = {userID = userInput.userID; service="Follow"; message = sprintf "You cannot follow yourself."; code = "FAIL"}
-        resp <- rectype |> Json.toJson |> System.Text.Encoding.UTF8.GetString    
-    // printfn "follow response: %s" resp
-    resp
+let followUser input =
+	let mutable response = ""
+	if input.value <> input.userID then
+		if followersMap.ContainsKey input.value then
+			if not (followersMap.[input.value].Contains input.userID) then
+				let mutable followersSet = followersMap.[input.value]
+				followersSet <- Set.add input.userID followersSet
+				followersMap <- Map.remove input.value followersMap
+				followersMap <- Map.add input.value followersSet followersMap
+				feedActor <! Subscribers(input.userID,input.value) 
+				let res: ResponseType = {userID = input.userID; 
+                                            service="Follow"; 
+                                            message = sprintf "You started following %s!" input.value; 
+                                            code = "OK"}
+				response <- res |> Json.toJson |> System.Text.Encoding.UTF8.GetString
+			else 
+				let res: ResponseType = {userID = input.userID; 
+                                        service="Follow"; 
+                                        message = sprintf "You are already following %s!" input.value; 
+                                        code = "FAIL"}
+				response <- res |> Json.toJson |> System.Text.Encoding.UTF8.GetString      
+		else  
+			let res: ResponseType = {userID = input.userID; 
+                                    service="Follow"; 
+                                    message = sprintf "Invalid request, No such user (%s)." input.value; 
+                                    code = "FAIL"}
+			response <- res |> Json.toJson |> System.Text.Encoding.UTF8.GetString
+	else
+		let res: ResponseType = {userID = input.userID; 
+                                service="Follow"; 
+                                message = sprintf "You cannot follow yourself."; 
+                                code = "FAIL"}
+		response <- res |> Json.toJson |> System.Text.Encoding.UTF8.GetString    
+	// printfn "follow response: %s" response
+	response
     
 let tweetUser userInput =
     let mutable resp = ""
