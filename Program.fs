@@ -28,14 +28,14 @@ let mutable mentionsMap = Map.empty
 let mutable registeredUsersMap = Map.empty
 let mutable followersMap = Map.empty
 
-type ResponseType = {
+type Response = {
     userID: string
     message: string
     service: string
     code: string
 }
 
-type RequestType = {
+type Request = {
     userID: string
     value: string
 }
@@ -51,10 +51,6 @@ type TweetMessages =
     | InitTweet of (IActorRef)
     | AddRegisteredUser of (string)
     | TweetRequest of (string*string*string)
-
-type RestResource<'a> = {
-        Entry : RequestType -> string
-}
 
 let agent = MailboxProcessor<string*WebSocket>.Start(fun inbox ->
     let rec messageLoop() = async {
@@ -86,7 +82,7 @@ let ServerActor (mailbox:Actor<_>) =
                                                         followers <- Map.remove followerId followers 
                                                         followers <- Map.add followerId followSet followers
                                                         // printfn "User %s started following you! for %s" userId followerId
-                                                        let mutable jsonData: ResponseType = 
+                                                        let mutable jsonData: Response = 
                                                             {userID = followerId; service= "Follow"; code = "OK"; message = sprintf "User %s started following you!" userId}
                                                         let mutable consJson = Json.serialize jsonData
                                                         // printfn "consjaosn = %A" consJson
@@ -115,7 +111,7 @@ let ServerActor (mailbox:Actor<_>) =
                                                             feedsPub <- feedsTop
                                                             sertype <- "LiveFeed"
                                                         // printfn "feeds pub = %A" feedsPub
-                                                        let jsonData: ResponseType = {userID = userId; message = feedsPub; code = "OK"; service=sertype}
+                                                        let jsonData: Response = {userID = userId; message = feedsPub; code = "OK"; service=sertype}
                                                         let consJson = Json.serialize jsonData
                                                         agent.Post (consJson,userWebSkt) 
 
@@ -132,7 +128,7 @@ let ServerActor (mailbox:Actor<_>) =
                                                             if followers.ContainsKey foll then
                                                                 if activeUsers.ContainsKey foll then
                                                                     let twt = sprintf "%s^%s" stype tweetMsg
-                                                                    let jsonData: ResponseType = {userID = foll; service=sertype; code="OK"; message = twt}
+                                                                    let jsonData: Response = {userID = foll; service=sertype; code="OK"; message = twt}
                                                                     let consJson = Json.serialize jsonData
                                                                     agent.Post (consJson,activeUsers.[foll])
                                                                 let mutable listy = []
@@ -154,7 +150,7 @@ let liveFeed (webSocket : WebSocket) (httpContext: HttpContext) =
             let! message = webSocket.read()
             match message with
             | (Text, data, true) -> let requestMessage = UTF8.toString data
-                                    let requestObj = Json.deserialize<RequestType> requestMessage
+                                    let requestObj = Json.deserialize<Request> requestMessage
                                     userId <- requestObj.userID
                                     serverActor <! LoginUser(requestObj.userID, webSocket)
                                     return! loop()
@@ -170,7 +166,7 @@ let liveFeed (webSocket : WebSocket) (httpContext: HttpContext) =
 let registerUser input =
     let mutable response = ""
     if registeredUsersMap.ContainsKey input.userID then
-        let res: ResponseType = {userID = input.userID; 
+        let res: Response = {userID = input.userID; 
                                 message = sprintf "User %s already registred" input.userID; 
                                 service = "Register";
                                 code = "FAIL"}
@@ -179,7 +175,7 @@ let registerUser input =
         registeredUsersMap <- Map.add input.userID input.value registeredUsersMap
         followersMap <- Map.add input.userID Set.empty followersMap
         serverActor <! RegisterUser(input.userID)
-        let res: ResponseType = {userID = input.userID; 
+        let res: Response = {userID = input.userID; 
                                 message = sprintf "User %s registred successfully" input.userID; 
                                 service = "Register"; 
                                 code = "OK"}
@@ -190,19 +186,19 @@ let loginUser input =
     let mutable response = ""
     if registeredUsersMap.ContainsKey input.userID then
         if registeredUsersMap.[input.userID] = input.value then
-            let res: ResponseType = {userID = input.userID; 
+            let res: Response = {userID = input.userID; 
                                     message = sprintf "User %s logged in successfully" input.userID; 
                                     service = "Login"; 
                                     code = "OK"}
             response <- res |> Json.toJson |> System.Text.Encoding.UTF8.GetString
         else 
-            let res: ResponseType = {userID = input.userID; 
+            let res: Response = {userID = input.userID; 
                                     message = "Invalid userid / password"; 
                                     service = "Login"; 
                                     code = "FAIL"}
             response <- res |> Json.toJson |> System.Text.Encoding.UTF8.GetString
     else
-        let res: ResponseType = {userID = input.userID; 
+        let res: Response = {userID = input.userID; 
                                 message = "Invalid userid / password"; 
                                 service = "Login"; 
                                 code = "FAIL"}
@@ -219,25 +215,25 @@ let followUser input =
                 followersMap <- Map.remove input.value followersMap
                 followersMap <- Map.add input.value followersSet followersMap
                 serverActor <! FollowUser(input.userID,input.value) 
-                let res: ResponseType = {userID = input.userID; 
+                let res: Response = {userID = input.userID; 
                                             service="Follow"; 
                                             message = sprintf "You started following %s!" input.value; 
                                             code = "OK"}
                 response <- res |> Json.toJson |> System.Text.Encoding.UTF8.GetString
             else 
-                let res: ResponseType = {userID = input.userID; 
+                let res: Response = {userID = input.userID; 
                                         service="Follow"; 
                                         message = sprintf "You are already following %s!" input.value; 
                                         code = "FAIL"}
                 response <- res |> Json.toJson |> System.Text.Encoding.UTF8.GetString      
         else  
-            let res: ResponseType = {userID = input.userID; 
+            let res: Response = {userID = input.userID; 
                                     service="Follow"; 
                                     message = sprintf "Invalid request, No such user (%s)." input.value; 
                                     code = "FAIL"}
             response <- res |> Json.toJson |> System.Text.Encoding.UTF8.GetString
     else
-        let res: ResponseType = {userID = input.userID; 
+        let res: Response = {userID = input.userID; 
                                 service="Follow"; 
                                 message = sprintf "You cannot follow yourself."; 
                                 code = "FAIL"}
@@ -268,20 +264,20 @@ let tweetUser input =
                 mentionsMap <- Map.remove mentionedUser mentionsMap
                 mentionsMap <- Map.add mentionedUser mList mentionsMap
                 serverActor <! UpdateFeeds(input.userID,input.value,"Tweet")
-                let res: ResponseType = {userID = input.userID; 
+                let res: Response = {userID = input.userID; 
                                         service="Tweet"; 
                                         message = (sprintf "%s tweeted:^%s" input.userID input.value); 
                                         code = "OK"}
                 response <- res |> Json.toJson |> System.Text.Encoding.UTF8.GetString
             else
-                let res: ResponseType = {userID = input.userID; 
+                let res: Response = {userID = input.userID; 
                                         service="Tweet"; 
                                         message = sprintf "Invalid request, mentioned user (%s) is not registered" mentionedUser; 
                                         code = "FAIL"}
                 response <- res |> Json.toJson |> System.Text.Encoding.UTF8.GetString
         else
             serverActor <! UpdateFeeds(input.userID,input.value,"Tweet")
-            let res: ResponseType = {userID = input.userID; 
+            let res: Response = {userID = input.userID; 
                                     service="Tweet"; 
                                     message = (sprintf "%s tweeted:^%s" input.userID input.value); 
                                     code = "OK"}
@@ -295,7 +291,7 @@ let tweetUser input =
             hashTagsMap <- Map.remove hashTag hashTagsMap
             hashTagsMap <- Map.add hashTag tList hashTagsMap
     else  
-        let res: ResponseType = {userID = input.userID; 
+        let res: Response = {userID = input.userID; 
                                 service="Tweet"; 
                                 message = sprintf "Invalid request by user %s, Not registered yet!" input.userID; 
                                 code = "FAIL"}
@@ -306,13 +302,13 @@ let retweetUser input =
     let mutable response = ""
     if registeredUsersMap.ContainsKey input.userID then
         serverActor <! UpdateFeeds(input.userID,input.value,"ReTweet")
-        let res: ResponseType = {userID = input.userID; 
+        let res: Response = {userID = input.userID; 
                                 service="ReTweet"; 
                                 message = (sprintf "%s re-tweeted:^%s" input.userID input.value); 
                                 code = "OK"}
         response <- res |> Json.toJson |> System.Text.Encoding.UTF8.GetString
     else  
-        let res: ResponseType = {userID = input.userID; 
+        let res: Response = {userID = input.userID; 
                                 service="ReTweet"; 
                                 message = sprintf "Invalid request by user %s, Not registered yet!" input.userID; 
                                 code = "FAIL"}
@@ -333,13 +329,13 @@ let query (input:string) =
                     size <- mapData.Length
                 for i in [0..(size-1)] do
                     mentionsString <- mentionsString + "-" + mapData.[i]
-                let res: ResponseType = {userID = ""; 
+                let res: Response = {userID = ""; 
                                         service="Query"; 
                                         message = mentionsString; 
                                         code = "OK"}
                 response <- Json.serialize res
             else 
-                let res: ResponseType = {userID = ""; 
+                let res: Response = {userID = ""; 
                                         service="Query"; 
                                         message = "-No tweets found for the mentioned user"; 
                                         code = "OK"}
@@ -352,19 +348,19 @@ let query (input:string) =
                         size <- mapData.Length
                 for i in [0..(size-1)] do
                         tagsstring <- tagsstring + "-" + mapData.[i]
-                let res: ResponseType = {userID = ""; 
+                let res: Response = {userID = ""; 
                                         service="Query"; 
                                         message = tagsstring; 
                                         code = "OK"}
                 response <- Json.serialize res
             else 
-                let res: ResponseType = {userID = ""; 
+                let res: Response = {userID = ""; 
                                         service="Query"; 
                                         message = "-No tweets found for the hashtag"; 
                                         code = "OK"}
                 response <- Json.serialize res
     else
-        let res: ResponseType = {userID = ""; 
+        let res: Response = {userID = ""; 
                                 service="Query"; 
                                 message = "Type something to search"; 
                                 code = "FAIL"}
@@ -382,7 +378,7 @@ let registerUserHandler =
         request (fun r -> 
         r.rawForm
         |> getString
-        |> fromJson<RequestType>
+        |> fromJson<Request>
         |> registerUser
         |> JsonConvert.SerializeObject
         |> CREATED )
@@ -392,7 +388,7 @@ let LoginUserHandler =
         request (fun r ->
         r.rawForm
         |> getString
-        |> fromJson<RequestType>
+        |> fromJson<Request>
         |> loginUser
         |> JsonConvert.SerializeObject
         |> CREATED )
@@ -402,7 +398,7 @@ let followUserHandler=
         request (fun r ->
         r.rawForm
         |> getString
-        |> fromJson<RequestType>
+        |> fromJson<Request>
         |> followUser
         |> JsonConvert.SerializeObject
         |> OK )
@@ -412,7 +408,7 @@ let tweetHandler =
         request (fun r ->
         r.rawForm
         |> getString
-        |> fromJson<RequestType>
+        |> fromJson<Request>
         |> tweetUser
         |> JsonConvert.SerializeObject
         |> CREATED )
@@ -422,7 +418,7 @@ let retweetHandler =
         request (fun r ->
         r.rawForm
         |> getString
-        |> fromJson<RequestType>
+        |> fromJson<Request>
         |> retweetUser
         |> JsonConvert.SerializeObject
         |> CREATED )
