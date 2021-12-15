@@ -22,15 +22,11 @@ open Suave.RequestErrors
 open Newtonsoft.Json
 open Suave.Writers
 
-
-let system = ActorSystem.Create("TwitterServer")
+let system = ActorSystem.Create("TwitterEngine")
 let mutable hashTagsMap = Map.empty
 let mutable mentionsMap = Map.empty
 let mutable registeredUsersMap = Map.empty
 let mutable followersMap = Map.empty
-
-let initialCapacity = 101
-let numProcs = Environment.ProcessorCount
 
 type ResponseType = {
     userID: string
@@ -45,10 +41,10 @@ type RequestType = {
 }
 
 type Showfeed = 
-    | RegisterNewUser of (string)
-    | Subscribers of (string*string)
-    | AddActiveUsers of (string*WebSocket)
-    | RemoveActiveUsers of (string)
+    | RegisterUser of (string)
+    | FollowUser of (string*string)
+    | LoginUser of (string*WebSocket)
+    | LogoutUser of (string)
     | UpdateFeeds of (string*string*string)
 
 type TweetMessages = 
@@ -73,18 +69,17 @@ let agent = MailboxProcessor<string*WebSocket>.Start(fun inbox ->
     messageLoop()
 )
 
-let FeedActor (mailbox:Actor<_>) = 
+let ServerActor (mailbox:Actor<_>) = 
     let mutable followers = Map.empty
     let mutable activeUsers = Map.empty
     let mutable feedtable = Map.empty
     let rec loop () = actor {
         let! message = mailbox.Receive() 
         match message with
-        | RegisterNewUser(userId) ->                followers <- Map.add userId Set.empty followers
+        | RegisterUser(userId)                  ->  followers <- Map.add userId Set.empty followers
                                                     feedtable <- Map.add userId List.empty feedtable
-                                                    // printfn "Followers Map: %A" followers
 
-        | Subscribers(userId, followerId) ->        if followers.ContainsKey followerId then
+        | FollowUser(userId, followerId)        ->  if followers.ContainsKey followerId then
                                                         let mutable followSet = Set.empty
                                                         followSet <- followers.[followerId]
                                                         followSet <- Set.add userId followSet
@@ -97,7 +92,7 @@ let FeedActor (mailbox:Actor<_>) =
                                                         // printfn "consjaosn = %A" consJson
                                                         agent.Post (consJson,activeUsers.[followerId])
 
-        | AddActiveUsers(userId,userWebSkt) ->      if activeUsers.ContainsKey userId then  
+        | LoginUser(userId,userWebSkt)     ->  if activeUsers.ContainsKey userId then  
                                                         activeUsers <- Map.remove userId activeUsers
                                                     activeUsers <- Map.add userId userWebSkt activeUsers 
                                                     let mutable feedsPub = ""
@@ -124,10 +119,10 @@ let FeedActor (mailbox:Actor<_>) =
                                                         let consJson = Json.serialize jsonData
                                                         agent.Post (consJson,userWebSkt) 
 
-        | RemoveActiveUsers(userId) ->              if activeUsers.ContainsKey userId then  
+        | LogoutUser(userId)             ->  if activeUsers.ContainsKey userId then  
                                                         activeUsers <- Map.remove userId activeUsers
                                                         
-        | UpdateFeeds(userId,tweetMsg,sertype) ->   if followers.ContainsKey userId then
+        | UpdateFeeds(userId,tweetMsg,sertype)  ->  if followers.ContainsKey userId then
                                                         let mutable stype = ""
                                                         if sertype = "Tweet" then
                                                             stype <- sprintf "%s tweeted:" userId
@@ -150,7 +145,7 @@ let FeedActor (mailbox:Actor<_>) =
     }
     loop()
 
-let feedActor = spawn system (sprintf "FeedActor") FeedActor
+let serverActor = spawn system "ServerActor" ServerActor
 
 let liveFeed (webSocket : WebSocket) (httpContext: HttpContext) =
     let rec loop() =
@@ -161,11 +156,11 @@ let liveFeed (webSocket : WebSocket) (httpContext: HttpContext) =
             | (Text, data, true) -> let requestMessage = UTF8.toString data
                                     let requestObj = Json.deserialize<RequestType> requestMessage
                                     userId <- requestObj.userID
-                                    feedActor <! AddActiveUsers(requestObj.userID, webSocket)
+                                    serverActor <! LoginUser(requestObj.userID, webSocket)
                                     return! loop()
             
             | (Close, _, _) ->      printfn "Closed WEBSOCKET"
-                                    feedActor <! RemoveActiveUsers(userId)
+                                    serverActor <! LogoutUser(userId)
                                     let emptyResponse = [||] |> ByteSegment
                                     do! webSocket.send Close emptyResponse true
             | _ -> return! loop()
@@ -183,7 +178,7 @@ let registerUser input =
     else
         registeredUsersMap <- Map.add input.userID input.value registeredUsersMap
         followersMap <- Map.add input.userID Set.empty followersMap
-        feedActor <! RegisterNewUser(input.userID)
+        serverActor <! RegisterUser(input.userID)
         let res: ResponseType = {userID = input.userID; 
                                 message = sprintf "User %s registred successfully" input.userID; 
                                 service = "Register"; 
@@ -223,7 +218,7 @@ let followUser input =
                 followersSet <- Set.add input.userID followersSet
                 followersMap <- Map.remove input.value followersMap
                 followersMap <- Map.add input.value followersSet followersMap
-                feedActor <! Subscribers(input.userID,input.value) 
+                serverActor <! FollowUser(input.userID,input.value) 
                 let res: ResponseType = {userID = input.userID; 
                                             service="Follow"; 
                                             message = sprintf "You started following %s!" input.value; 
@@ -272,7 +267,7 @@ let tweetUser input =
                 mList <- (sprintf "%s tweeted:^%s" input.userID input.value) :: mList
                 mentionsMap <- Map.remove mentionedUser mentionsMap
                 mentionsMap <- Map.add mentionedUser mList mentionsMap
-                feedActor <! UpdateFeeds(input.userID,input.value,"Tweet")
+                serverActor <! UpdateFeeds(input.userID,input.value,"Tweet")
                 let res: ResponseType = {userID = input.userID; 
                                         service="Tweet"; 
                                         message = (sprintf "%s tweeted:^%s" input.userID input.value); 
@@ -285,7 +280,7 @@ let tweetUser input =
                                         code = "FAIL"}
                 response <- res |> Json.toJson |> System.Text.Encoding.UTF8.GetString
         else
-            feedActor <! UpdateFeeds(input.userID,input.value,"Tweet")
+            serverActor <! UpdateFeeds(input.userID,input.value,"Tweet")
             let res: ResponseType = {userID = input.userID; 
                                     service="Tweet"; 
                                     message = (sprintf "%s tweeted:^%s" input.userID input.value); 
@@ -310,7 +305,7 @@ let tweetUser input =
 let retweetUser input =
     let mutable response = ""
     if registeredUsersMap.ContainsKey input.userID then
-        feedActor <! UpdateFeeds(input.userID,input.value,"ReTweet")
+        serverActor <! UpdateFeeds(input.userID,input.value,"ReTweet")
         let res: ResponseType = {userID = input.userID; 
                                 service="ReTweet"; 
                                 message = (sprintf "%s re-tweeted:^%s" input.userID input.value); 
@@ -393,7 +388,7 @@ let registerUserHandler =
         |> CREATED )
         >=> setMimeType "application/json"
 
-let logUser = 
+let LoginUserHandler = 
         request (fun r ->
         r.rawForm
         |> getString
@@ -403,7 +398,7 @@ let logUser =
         |> CREATED )
         >=> setMimeType "application/json"
 
-let followAUser=
+let followUserHandler=
         request (fun r ->
         r.rawForm
         |> getString
@@ -413,7 +408,7 @@ let followAUser=
         |> OK )
         >=> setMimeType "application/json"
 
-let sendTweetByUser =
+let tweetHandler =
         request (fun r ->
         r.rawForm
         |> getString
@@ -423,7 +418,7 @@ let sendTweetByUser =
         |> CREATED )
         >=> setMimeType "application/json"
 
-let sendRetweetByUser =
+let retweetHandler =
         request (fun r ->
         r.rawForm
         |> getString
@@ -442,10 +437,10 @@ let app =
             
             POST >=> choose
                     [   path "/register" >=> registerUserHandler
-                        path "/login" >=> logUser
-                        path "/follow" >=> followAUser 
-                        path "/tweet" >=> sendTweetByUser
-                        path "/retweet" >=> sendRetweetByUser
+                        path "/login" >=> LoginUserHandler
+                        path "/follow" >=> followUserHandler 
+                        path "/tweet" >=> tweetHandler
+                        path "/retweet" >=> retweetHandler
                     ]
                         
         ]
