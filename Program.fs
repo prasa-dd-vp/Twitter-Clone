@@ -2,23 +2,15 @@
 open Akka.FSharp
 open FSharp.Json
 open Akka.Actor
+
 open Suave
-open Suave.Http
 open Suave.Operators
 open Suave.Filters
 open Suave.Successful
 open Suave.Files
-open Suave.RequestErrors
-open Suave.Logging
-open Suave.Utils
-open System.IO
-open System.Net
 open Suave.Sockets
 open Suave.Sockets.Control
 open Suave.WebSocket
-open Newtonsoft.Json
-open System.Threading
-open Suave.RequestErrors
 open Newtonsoft.Json
 open Suave.Writers
 
@@ -31,7 +23,7 @@ let mutable followersMap = Map.empty
 type Response = {
     userID: string
     message: string
-    service: string
+    action: string
     code: string
 }
 
@@ -47,14 +39,14 @@ type Showfeed =
     | LogoutUser of (string)
     | UpdateFeeds of (string*string*string)
 
-let agent = MailboxProcessor<string*WebSocket>.Start(fun inbox ->
+let websocket = MailboxProcessor<string*WebSocket>.Start(fun inbox ->
     let rec messageLoop() = async {
-        let! msg,webSkt = inbox.Receive()
-        let byteRes =
-            msg
+        let! message,ws = inbox.Receive()
+        let byteArr =
+            message
             |> System.Text.Encoding.ASCII.GetBytes
             |> ByteSegment
-        let! _ = webSkt.send Text byteRes true
+        let! _ = ws.send Text byteArr true
         return! messageLoop()
     }
     messageLoop()
@@ -76,62 +68,65 @@ let ServerActor (mailbox:Actor<_>) =
                                                         followSet <- Set.add userId followSet
                                                         followers <- Map.remove followerId followers 
                                                         followers <- Map.add followerId followSet followers
-                                                        // printfn "User %s started following you! for %s" userId followerId
-                                                        let mutable jsonData: Response = 
-                                                            {userID = followerId; service= "Follow"; code = "OK"; message = sprintf "User %s started following you!" userId}
-                                                        let mutable consJson = Json.serialize jsonData
-                                                        // printfn "consjaosn = %A" consJson
-                                                        agent.Post (consJson,activeUsers.[followerId])
+                                                        let mutable json: Response = {userID = followerId; 
+                                                                                      action= "Follow"; 
+                                                                                      code = "OK"; 
+                                                                                      message = sprintf "User %s started following you!" userId}
+                                                        let mutable serJson = Json.serialize json
+                                                        websocket.Post (serJson,activeUsers.[followerId])
 
-        | LoginUser(userId,userWebSkt)          ->  if activeUsers.ContainsKey userId then  
+        | LoginUser(userId,webSocket)          ->   if activeUsers.ContainsKey userId then  
                                                         activeUsers <- Map.remove userId activeUsers
-                                                    activeUsers <- Map.add userId userWebSkt activeUsers 
-                                                    let mutable feedsPub = ""
-                                                    let mutable sertype = ""
+                                                    activeUsers <- Map.add userId webSocket activeUsers 
+                                                    let mutable feedstr = ""
+                                                    let mutable actiontype = ""
                                                     if feedtable.ContainsKey userId then
-                                                        let mutable feedsTop = ""
-                                                        let mutable fSize = 10
+                                                        let mutable feeds = ""
+                                                        let mutable length = 10
                                                         let feedList:List<string> = feedtable.[userId]
                                                         if feedList.Length = 0 then
-                                                            sertype <- "Follow"
-                                                            feedsPub <- sprintf "No feeds yet!!"
+                                                            actiontype <- "Follow"
+                                                            feedstr <- "No feeds yet!!"
                                                         else
                                                             if feedList.Length < 10 then
-                                                                    fSize <- feedList.Length
-                                                            // printfn"fsize = %d" fSize
-                                                            for i in [0..(fSize-1)] do
-                                                                // printfn "feed %d = %s" i feedtable.[userId].[i]
-                                                                feedsTop <- "-" + feedtable.[userId].[i] + feedsTop
+                                                                length <- feedList.Length
+                                                            for i in [0..(length-1)] do
+                                                                feeds <- "-" + feedtable.[userId].[i] + feeds
 
-                                                            feedsPub <- feedsTop
-                                                            sertype <- "LiveFeed"
-                                                        // printfn "feeds pub = %A" feedsPub
-                                                        let jsonData: Response = {userID = userId; message = feedsPub; code = "OK"; service=sertype}
-                                                        let consJson = Json.serialize jsonData
-                                                        agent.Post (consJson,userWebSkt) 
+                                                            feedstr <- feeds
+                                                            actiontype <- "LiveFeed"
+                                                        let json: Response = {userID = userId; 
+                                                                              message = feedstr; 
+                                                                              code = "OK"; 
+                                                                              action=actiontype}
+                                                        let serializedJson = Json.serialize json
+                                                        websocket.Post (serializedJson,webSocket) 
 
         | LogoutUser(userId)                    ->  if activeUsers.ContainsKey userId then  
                                                         activeUsers <- Map.remove userId activeUsers
                                                         
-        | UpdateFeeds(userId,tweetMsg,sertype)  ->  if followers.ContainsKey userId then
-                                                        let mutable stype = ""
-                                                        if sertype = "Tweet" then
-                                                            stype <- sprintf "%s tweeted:" userId
+        | UpdateFeeds(userId,tweetMsg,actiontype)-> if followers.ContainsKey userId then
+                                                        let mutable prefix = ""
+                                                        if actiontype = "Tweet" then
+                                                            prefix <- sprintf "%s tweeted:" userId
                                                         else 
-                                                            stype <- sprintf "%s re-tweeted:" userId
-                                                        for foll in followers.[userId] do 
-                                                            if followers.ContainsKey foll then
-                                                                if activeUsers.ContainsKey foll then
-                                                                    let twt = sprintf "%s^%s" stype tweetMsg
-                                                                    let jsonData: Response = {userID = foll; service=sertype; code="OK"; message = twt}
-                                                                    let consJson = Json.serialize jsonData
-                                                                    agent.Post (consJson,activeUsers.[foll])
-                                                                let mutable listy = []
-                                                                if feedtable.ContainsKey foll then
-                                                                        listy <- feedtable.[foll]
-                                                                listy  <- (sprintf "%s^%s" stype tweetMsg) :: listy
-                                                                feedtable <- Map.remove foll feedtable
-                                                                feedtable <- Map.add foll listy feedtable
+                                                            prefix <- sprintf "%s re-tweeted:" userId
+                                                        for followr in followers.[userId] do 
+                                                            if followers.ContainsKey followr then
+                                                                if activeUsers.ContainsKey followr then
+                                                                    let tweet = sprintf "%s^%s" prefix tweetMsg
+                                                                    let json: Response = {userID = followr; 
+                                                                                          action=actiontype; 
+                                                                                          code="OK"; 
+                                                                                          message = tweet}
+                                                                    let serJson = Json.serialize json
+                                                                    websocket.Post (serJson,activeUsers.[followr])
+                                                                let mutable fList = []
+                                                                if feedtable.ContainsKey followr then
+                                                                        fList <- feedtable.[followr]
+                                                                fList  <- (sprintf "%s^%s" prefix tweetMsg) :: fList
+                                                                feedtable <- Map.remove followr feedtable
+                                                                feedtable <- Map.add followr fList feedtable
         return! loop()
     }
     loop()
@@ -163,7 +158,7 @@ let registerUser input =
     if registeredUsersMap.ContainsKey input.userID then
         let res: Response = {userID = input.userID; 
                             message = sprintf "User %s already registred" input.userID; 
-                            service = "Register";
+                            action = "Register";
                             code = "FAIL"}
         response <- res |> Json.toJson |> System.Text.Encoding.UTF8.GetString
     else
@@ -172,7 +167,7 @@ let registerUser input =
         serverActor <! RegisterUser(input.userID)
         let res: Response = {userID = input.userID; 
                             message = sprintf "User %s registred successfully" input.userID; 
-                            service = "Register"; 
+                            action = "Register"; 
                             code = "OK"}
         response <- res |> Json.toJson |> System.Text.Encoding.UTF8.GetString
     response
@@ -183,19 +178,19 @@ let loginUser input =
         if registeredUsersMap.[input.userID] = input.value then
             let res: Response = {userID = input.userID; 
                                 message = sprintf "User %s logged in successfully" input.userID; 
-                                service = "Login"; 
+                                action = "Login"; 
                                 code = "OK"}
             response <- res |> Json.toJson |> System.Text.Encoding.UTF8.GetString
         else 
             let res: Response = {userID = input.userID; 
                                 message = "Invalid userid / password"; 
-                                service = "Login"; 
+                                action = "Login"; 
                                 code = "FAIL"}
             response <- res |> Json.toJson |> System.Text.Encoding.UTF8.GetString
     else
         let res: Response = {userID = input.userID; 
                             message = "Invalid userid / password"; 
-                            service = "Login"; 
+                            action = "Login"; 
                             code = "FAIL"}
         response <- res |> Json.toJson |> System.Text.Encoding.UTF8.GetString
     response
@@ -211,25 +206,25 @@ let followUser input =
                 followersMap <- Map.add input.value followersSet followersMap
                 serverActor <! FollowUser(input.userID,input.value) 
                 let res: Response = {userID = input.userID; 
-                                    service="Follow"; 
+                                    action="Follow"; 
                                     message = sprintf "You started following %s!" input.value; 
                                     code = "OK"}
                 response <- res |> Json.toJson |> System.Text.Encoding.UTF8.GetString
             else 
                 let res: Response = {userID = input.userID; 
-                                    service="Follow"; 
+                                    action="Follow"; 
                                     message = sprintf "You are already following %s!" input.value; 
                                     code = "FAIL"}
                 response <- res |> Json.toJson |> System.Text.Encoding.UTF8.GetString      
         else  
             let res: Response = {userID = input.userID; 
-                                service="Follow"; 
+                                action="Follow"; 
                                 message = sprintf "Invalid request, No such user (%s)." input.value; 
                                 code = "FAIL"}
             response <- res |> Json.toJson |> System.Text.Encoding.UTF8.GetString
     else
         let res: Response = {userID = input.userID; 
-                            service="Follow"; 
+                            action="Follow"; 
                             message = sprintf "You cannot follow yourself."; 
                             code = "FAIL"}
         response <- res |> Json.toJson |> System.Text.Encoding.UTF8.GetString    
@@ -260,20 +255,20 @@ let tweetUser input =
             mentionsMap <- Map.add mentionedUser mList mentionsMap
             serverActor <! UpdateFeeds(input.userID,input.value,"Tweet")
             let res: Response = {userID = input.userID; 
-                                service="Tweet"; 
+                                action="Tweet"; 
                                 message = (sprintf "%s tweeted:^%s" input.userID input.value); 
                                 code = "OK"}
             response <- res |> Json.toJson |> System.Text.Encoding.UTF8.GetString
         else
             let res: Response = {userID = input.userID; 
-                                service="Tweet"; 
+                                action="Tweet"; 
                                 message = sprintf "Invalid request, mentioned user (%s) is not registered" mentionedUser; 
                                 code = "FAIL"}
             response <- res |> Json.toJson |> System.Text.Encoding.UTF8.GetString
     else
         serverActor <! UpdateFeeds(input.userID,input.value,"Tweet")
         let res: Response = {userID = input.userID; 
-                            service="Tweet"; 
+                            action="Tweet"; 
                             message = (sprintf "%s tweeted:^%s" input.userID input.value); 
                             code = "OK"}
         response <- res |> Json.toJson |> System.Text.Encoding.UTF8.GetString
@@ -293,7 +288,7 @@ let retweetUser input =
     
     serverActor <! UpdateFeeds(input.userID,input.value,"ReTweet")
     let res: Response = {userID = input.userID; 
-                        service="ReTweet"; 
+                        action="ReTweet"; 
                         message = (sprintf "%s re-tweeted:^%s" input.userID input.value); 
                         code = "OK"}
     response <- res |> Json.toJson |> System.Text.Encoding.UTF8.GetString
@@ -313,13 +308,13 @@ let getMentionUser (input:string) =
         for i in [0..(size-1)] do
             mention <- mention + "-" + mapData.[i]
         let res: Response = {userID = ""; 
-                            service="Query"; 
+                            action="Query"; 
                             message = mention; 
                             code = "OK"}
         response <- Json.serialize res
     else 
         let res: Response = {userID = ""; 
-                            service="Query"; 
+                            action="Query"; 
                             message = "-No tweets found for the mentioned user"; 
                             code = "OK"}
         response <- Json.serialize res
@@ -338,13 +333,13 @@ let getHashtag (input:string) =
         for i in [0..(size-1)] do
                 hashtag <- hashtag + "-" + mapData.[i]
         let res: Response = {userID = ""; 
-                            service="Query"; 
+                            action="Query"; 
                             message = hashtag; 
                             code = "OK"}
         response <- Json.serialize res
     else 
         let res: Response = {userID = ""; 
-                            service="Query"; 
+                            action="Query"; 
                             message = "-No tweets found for the hashtag"; 
                             code = "OK"}
         response <- Json.serialize res
@@ -359,7 +354,7 @@ let query (input:string) =
             response <- getHashtag input
     else
         let res: Response = {userID = ""; 
-                            service="Query"; 
+                            action="Query"; 
                             message = "Search word missing"; 
                             code = "FAIL"}
         response <- Json.serialize res

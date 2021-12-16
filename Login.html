@@ -528,15 +528,15 @@
         function onMessage(evt)
         {
             var rep = JSON.parse(evt.data);
-            if(rep['service'] === "Follow") {
-                printFeed(rep['message'],rep['userID'],rep['service']);
+            if(rep['action'] === "Follow") {
+                printFeed(rep['message'],rep['userID'],rep['action']);
             }
-            else if(rep['service'] !== "LiveFeed") {
+            else if(rep['action'] !== "LiveFeed") {
                 var msg = rep['message'].split('^');
-                printFeed(msg[1],msg[0],rep['service']);
+                printFeed(msg[1],msg[0],rep['action']);
             }
             else {
-                printFeed(rep['message'],rep['userID'],rep['service']);
+                printFeed(rep['message'],rep['userID'],rep['action']);
             }
         }
 
@@ -619,7 +619,7 @@
             }
         }
 
-        async function handleFormSubmit(event) {
+        async function handleTweetAndFollow(event) {
             event.preventDefault();
             const form = event.currentTarget;
             const requrl = form.action;
@@ -633,15 +633,15 @@
                     window.alert(res['message@']);
                 }
                 else {
-                    if(res['service@'] === "Follow") {
-                        printFeed(res['message@'], res['userID@'], res['service@']);
+                    if(res['action@'] === "Follow") {
+                        printFeed(res['message@'], res['userID@'], res['action@']);
                     }
-                    else if(res['service@'] !== "Query") {
+                    else if(res['action@'] !== "Query") {
                         var msg = res['message@'].split('^');
-                        printFeed(msg[1], msg[0], res['service@']);
+                        printFeed(msg[1], msg[0], res['action@']);
                     }
                     else {
-                        printQuery(res['message@'], res['userID@'], res['service@']);
+                        printQuery(res['message@'], res['userID@'], res['action@']);
                     }
                 }
             } catch (error) {
@@ -664,15 +664,15 @@
                     window.alert(res['message@']);
                 }
                 else {
-                    if(res['service@'] === "Follow") {
-                        printFeed(res['message@'], res['userID@'], res['service@']);
+                    if(res['action@'] === "Follow") {
+                        printFeed(res['message@'], res['userID@'], res['action@']);
                     }
-                    else if(res['service@'] !== "Query") {
+                    else if(res['action@'] !== "Query") {
                         var msg = res['message@'].split('^');
-                        printFeed(msg[1], msg[0], res['service@']);
+                        printFeed(msg[1], msg[0], res['action@']);
                     }
                     else {
-                        printQuery(res['message@'], res['userID@'], res['service@']);
+                        printQuery(res['message@'], res['userID@'], res['action@']);
                     }
                 }
             } catch (error) {
@@ -696,7 +696,7 @@
 	        return response.json();
         }
 
-        async function handleQuerySubmit(event) {
+        async function handleSearch(event) {
             event.preventDefault();
             const form = event.currentTarget;
             var requrl = form.action;
@@ -709,7 +709,7 @@
                     window.alert(res['message']);
                 }
                 else {
-                    printQuery(res['message'], res['userID'], res['service']);
+                    printQuery(res['message'], res['userID'], res['action']);
                 }
             } catch (error) {
                 console.error(error);
@@ -721,11 +721,11 @@
         const registerForm = document.getElementById("register-form");
         registerForm.addEventListener("submit", handleRegister);
         const tweetForm = document.getElementById("tweet-form");
-        tweetForm.addEventListener("submit", handleFormSubmit);
+        tweetForm.addEventListener("submit", handleTweetAndFollow);
         const followForm = document.getElementById("follow-form");
-        followForm.addEventListener("submit", handleFormSubmit);
+        followForm.addEventListener("submit", handleTweetAndFollow);
         const searchForm = document.getElementById("search-form");
-        searchForm.addEventListener("submit", handleQuerySubmit);
+        searchForm.addEventListener("submit", handleSearch);
 </script>
 
 </html>    
