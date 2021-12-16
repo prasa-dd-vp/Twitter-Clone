@@ -29,15 +29,14 @@
                     text-decoration: none;
                     color: #666;
                     font-weight: bold;
-                    font-size: 15px;
+                    font-size: 18px;
                     -webkit-transition: all 0.1s linear;
                     -moz-transition: all 0.1s linear;
                     transition: all 0.1s linear;
                 }
 
                     .panel-login > .panel-heading a.active {
-                        color: #029f5b;
-                        font-size: 18px;
+                        color: #1D9BF0;
                     }
 
                 .panel-login > .panel-heading hr {
@@ -71,15 +70,15 @@
             }
 
         .btn-login {
-            background-color: #59B2E0;
+            background-color: #1D9BF0;
             outline: none;
+            font-weight: bold;
             color: #fff;
             font-size: 14px;
             height: auto;
-            font-weight: normal;
             padding: 14px 0;
             text-transform: uppercase;
-            border-color: #59B2E6;
+            border-color: #1D9BF0;
         }
 
             .btn-login:hover,
@@ -101,22 +100,21 @@
             }
 
         .btn-register {
-            background-color: #1CB94E;
+            background-color: #1D9BF0;
             outline: none;
             color: #fff;
             font-size: 14px;
             height: auto;
-            font-weight: normal;
+            font-weight: bold;
             padding: 14px 0;
             text-transform: uppercase;
-            border-color: #1CB94A;
+            border-color: #1D9BF0;
         }
 
             .btn-register:hover,
             .btn-register:focus {
                 color: #fff;
-                background-color: #1CA347;
-                border-color: #1CA347;
+                background-color: #0789ca;
             }
 
         html, body {
@@ -188,7 +186,7 @@
 
         .navbar-blue {
             border-width: 0;
-            background-color: #3B5999;
+            background-color: #1D9BF0;
             color: #ffffff;
             font-family: arial,sans-serif;
             top: 0;
@@ -213,39 +211,17 @@
                 color: #fff;
             }
 
-        #main {
+        #home {
             background-color: #e9eaed;
             padding-left: 0;
             padding-right: 0;
         }
 
-            #main .img-circle {
-                margin-top: 18px;
-                height: 70px;
-                width: 70px;
-            }
-
-        #sidebar {
-            padding: 0px;
-            padding-top: 15px;
-        }
-
-            #sidebar, #sidebar a, #sidebar-footer a {
-                color: #ffffff;
-                background-color: transparent;
-                text-shadow: 0 0 2px #000000;
-                padding-left: 5px;
-            }
-
-                #sidebar .nav li > a:hover {
-                    background-color: #393939;
-                }
-
-        .logo {
+        /* .logo {
             display: block;
             padding: 3px;
             background-color: #fff;
-            color: #3B5999;
+            color: #1D9BF0;
             height: 28px;
             width: auto;
             margin: 9px;
@@ -257,18 +233,7 @@
             text-decoration: none;
             text-shadow: 0 0 1px;
             border-radius: 2px;
-        }
-
-        #sidebar-footer {
-            background-color: #444;
-            position: absolute;
-            bottom: 5px;
-            padding: 5px;
-        }
-
-        #footer {
-            margin-bottom: 20px;
-        }
+        } */
 
         h1, h2, h3 {
             font-weight: 800;
@@ -283,7 +248,7 @@
             }
 
         .btn-primary, .label-primary, .list-group-item.active, .list-group-item.active:hover, .list-group-item.active:focus {
-            background-color: #3B5999;
+            background-color: #1D9BF0;
             color: #fffffe;
         }
 
@@ -292,131 +257,32 @@
             text-shadow: 0 0 1px rgba(0,0,0,.3);
         }
 
-        .form-control {
-        }
-
         .panel textarea, .well textarea, textarea.form-control {
             resize: none;
-        }
-
-        .badge {
-            color: #3B5999;
-            background-color: #fff;
-        }
-
-            .badge:hover, .badge-inverse {
-                background-color: #3B5999;
-                color: #fff;
-            }
-
-        .jumbotron {
-            background-color: transparent;
         }
 
         .label-default {
             background-color: #dddddd;
         }
 
-        .page-header {
-            margin-top: 55px;
-            padding-top: 9px;
-            border-top: 1px solid #eeeeee;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-
-        .panel-default .panel-heading {
-            background-color: #f9fafb;
-            color: #555555;
-        }
-
-        .col-sm-9.full {
-            width: 100%;
-        }
-
-        .modal-header, .modal-footer {
-            background-color: #f2f2f2;
-            font-weight: 800;
-            font-size: 12px;
-        }
-
-            .modal-footer i, .well i {
-                font-size: 20px;
-                color: #c0c0c0;
-            }
-
-        .modal-body {
-            padding: 0px;
-        }
-
-            .modal-body textarea.form-control {
-                resize: none;
-                border: 0;
-                box-shadow: 0 0 0;
-            }
-
         small.text-muted {
             font-family: courier,courier-new,monospace;
-        }
-
-        @media (max-width: 768px) {
-
-            .column .padding {
-                padding: 7px;
-            }
-
-            .full {
-                padding-top: 20px;
-            }
-
-            .navbar-blue {
-                background-color: #3B5999;
-                top: 0;
-                width: 100%;
-                position: relative;
-            }
-        }
-
-        @media screen and (max-width: 768px) {
-            .row-offcanvas {
-                position: relative;
-                -webkit-transition: all 0.25s ease-out;
-                -moz-transition: all 0.25s ease-out;
-                transition: all 0.25s ease-out;
-            }
-
-            .row-offcanvas-left.active {
-                left: 33%;
-            }
-
-                .row-offcanvas-left.active .sidebar-offcanvas {
-                    left: -33%;
-                    position: absolute;
-                    top: 0;
-                    width: 33%;
-                    margin-left: 5px;
-                }
-
-            #sidebar, #sidebar a, #sidebar-footer a {
-                padding-left: 3px;
-            }
         }
     </style>
     <script language="javascript" type="text/javascript">
         $(function () {
-            $('#mainpage').hide();
-            $('#login-form-link').click(function (e) {
-                $("#login-form").delay(100).fadeIn(100);
-                $("#register-form").fadeOut(100);
-                $('#register-form-link').removeClass('active');
+            $('#homepage').hide();
+            $('#login-link').click(function (e) {
+                $("#login-form").delay(120).fadeIn(120);
+                $("#register-form").fadeOut(120);
+                $('#register-link').removeClass('active');
                 $(this).addClass('active');
                 e.preventDefault();
             });
-            $('#register-form-link').click(function (e) {
-                $("#register-form").delay(100).fadeIn(100);
-                $("#login-form").fadeOut(100);
-                $('#login-form-link').removeClass('active');
+            $('#register-link').click(function (e) {
+                $("#register-form").delay(120).fadeIn(120);
+                $("#login-form").fadeOut(120);
+                $('#login-link').removeClass('active');
                 $(this).addClass('active');
                 e.preventDefault();
             });
@@ -432,10 +298,10 @@
                     <div class="panel-heading">
                         <div class="row">
                             <div class="col-xs-6">
-                                <a href="#" class="active" id="login-form-link">Login</a>
+                                <a href="#" class="active" id="login-link">Login</a>
                             </div>
                             <div class="col-xs-6">
-                                <a href="#" id="register-form-link">Register</a>
+                                <a href="#" id="register-link">Register</a>
                             </div>
                         </div>
                         <hr>
@@ -451,7 +317,7 @@
                                         <input type="password" name="value" id="password1" tabindex="2" class="form-control" placeholder="Password">
                                     </div>
                                     <div class="form-group">
-                                        <span id="loginerror"></span>
+                                        <span id="loginfail"></span>
                                     </div>
                                     <div class="form-group">
                                         <div class="row">
@@ -469,7 +335,7 @@
                                         <input type="password" name="value" id="password2" tabindex="2" class="form-control" placeholder="Password">
                                     </div>
                                     <div class="form-group">
-                                        <span id="registererror"></span>
+                                        <span id="registerfail"></span>
                                     </div>
                                     <div class="form-group">
                                         <div class="row">
@@ -486,13 +352,10 @@
             </div>
         </div>
     </div>
-    <div id="mainpage" class="wrapper">
+    <div id="homepage" class="wrapper" style="display: block;">
         <div class="box">
             <div class="row row-offcanvas row-offcanvas-left">
-                <!-- main right col -->
-                <div class="column col-sm-12 col-xs-12" id="main">
-
-                    <!-- top nav -->
+                <div class="column col-sm-12 col-xs-12" id="home">
                     <div class="navbar navbar-blue navbar-static-top">
                         <div class="navbar-header">
                             <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".navbar-collapse">
@@ -501,13 +364,13 @@
                                 <span class="icon-bar"></span>
                                 <span class="icon-bar"></span>
                             </button>
-                            <a id="logoname" href="http://localhost:8080" class="navbar-brand logo"></a>
                         </div>
                         <nav class="collapse navbar-collapse" role="navigation">
-                            <form class="navbar-form navbar-left">
+                            <span class="navbar-form" style="font-weight: bold; position: fixed; top: 5px; font-size: large;">Twitter Lite</span>
+                            <form class="navbar-form" style="float: right;">
                                 <div class="input-group input-group-sm" style="max-width:360px;">
                                     <div class="input-group-btn">
-                                        <button href="http://localhost:8080" class="btn btn-default" type="submit">Logout</i></button>
+                                        <button href="http://localhost:8080" class="btn btn-default" style="font-weight: bold; border-radius: 15px; font-size: 13px;" type="submit">Logout</button>
                                     </div>
                                 </div>
                             </form>
@@ -515,35 +378,65 @@
                     </div>
 
                     <div class="padding">
-                        <div class="full col-sm-9">
-
-                            <!-- content -->
+                        <div class="full col-sm-12">
                             <div class="row">
-
-                                <!-- main col left -->
-                                <div class="col-sm-5">
-                                    <div class="panel panel-default">
+                                <div class="col-sm-3">
+                                    <!-- <div class="panel panel-default">
                                         <div class="panel-body">
                                             <p id="userlabel" class="lead"></p>
                                         </div>
-                                    </div>
+                                    </div> -->
 
-                                    <div class="well">
-                                        <form id="followform" class="form" action="http://localhost:8080/follow" method="post" role="form">
-                                            <h4>Follow</h4>
+                                    <div class="well" style="background-color: #fff;">
+                                        <form id="follow-form" class="form" action="http://localhost:8080/follow" method="post" role="form">
+                                            <h4 style="font-weight: bold;">Follow</h4>
                                             <div class="input-group text-center">
                                                 <input class="form-control input-lg" placeholder="Enter the userid" type="text" name="value">
                                                 <span class="input-group-btn"><input class="btn btn-lg btn-primary" name="follow-button" type="submit" value="Follow"></span>
                                             </div>
                                         </form>
                                     </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="well" style="background-color: #fff;">
+                                        <form id="tweet-form" class="form-horizontal" action="http://localhost:8080/tweet" method="post" role="form">
+                                            <h4 id="userlabel"></h4>
+                                            <div class="form-group row" style="padding:15px;">
+                                                <textarea class="form-control col-lg-9" style="display: inline-block; width: 77%;" placeholder="What's happening?" name="value"></textarea>   
+                                                <input class="btn btn-lg btn-primary col-lg-2" style="margin-left: 30px;margin-top: 8px;padding: 5px;border-radius: 18px;" name="tweet-button" type="submit" value="Tweet">
+                                            </div>
+                                            
+                                            
+                                        </form>
+                                    </div>
 
                                     <div class="panel panel-default">
-                                        <div class="panel-heading"><h4>Search</h4></div>
+                                        <div class="panel-heading" style="background-color: #1D9BF0; color: #fff;"><h4 style="font-weight: bold;">Here's your Feed</h4></div>
                                         <div class="panel-body">
-                                            <form id="searchform" class="form" action="http://localhost:8080/search" method="post" role="form">
+                                            <ul id="feedresults" class="list-group">
+                                                <li class="list-group-item">
+                                                    <div class="feed">No feeds yet!!</div>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+
+                                </div><div class="col-sm-3">
+                                    <!-- <div class="panel panel-default">
+                                        <div class="panel-body">
+                                            <p id="userlabel" class="lead"></p>
+                                        </div>
+                                    </div> -->
+
+                                    
+
+                                    <div class="panel panel-default">
+                                        <!-- <div class="panel-heading"><h4>Search</h4></div> -->
+                                        <div class="panel-body">
+                                            <form id="search-form" class="form" action="http://localhost:8080/search" method="post" role="form">
+                                                <h4 style="font-weight: bold;">Search</h4>
                                                 <div class="input-group text-center">
-                                                    <input class="form-control input-lg" placeholder="@userid / hashtag" type="text" name="value">
+                                                    <input class="form-control input-lg" placeholder="@username / hashtag" type="text" name="value">
                                                     <span class="input-group-btn"><input class="btn btn-lg btn-primary" name="search-button" type="submit" value="Search"></span>
                                                 </div>
                                             </form>
@@ -553,42 +446,18 @@
                                         </div>
                                     </div>
                                 </div>
-
-                                <!-- main col right -->
-                                <div class="col-sm-7">
-                                    <div class="well">
-                                        <form id="tweetform" class="form-horizontal" action="http://localhost:8080/tweet" method="post" role="form">
-                                            <h4>What's happening?</h4>
-                                            <div class="form-group" style="padding:14px;">
-                                                <textarea class="form-control" placeholder="Update your status" name="value"></textarea>
-                                            </div>
-                                            <input class="btn btn-primary pull-right" name="tweet-button" type="submit" value="Tweet">
-                                        </form>
-                                    </div>
-
-                                    <div class="panel panel-default">
-                                        <div class="panel-heading"><h4>Live Feed</h4></div>
-                                        <div class="panel-body">
-                                            <ul id="feedresults" class="list-group">
-                                            </ul>
-                                        </div>
-                                    </div>
-
-                                </div>
-                            </div><!--/row-->
+                            </div>
                             <hr>
-                            <hr>
-                        </div><!-- /col-9 -->
-                    </div><!-- /padding -->
+                        </div>
+                    </div>
                 </div>
-                <!-- /main -->
 
             </div>
         </div>
     </div>
 </body>
 <script>
-        var user = "";
+        var userID = "";
         function initWebSocket(userid)
         {
             websocket = new WebSocket("ws://localhost:8080/livefeed");
@@ -605,44 +474,40 @@
             Http.send();
         }
 
-        function printToFeed(msg, uid, ser) {
+        function printFeed(msg, uid, ser) {
             if($("#feedresults li").length === 1 && $($(".feed"),"li:eq(0)",$("#feedresults"))[0].innerText === "No feeds yet!!") {
                 $("#feedresults").empty();
             }
             if(ser === "Follow") {
-                var something = "<li class='list-group-item'><div class='feed'>" + msg + "</div></li>";
-                $("#feedresults").prepend(something);
+                var feedtag = "<li class='list-group-item'><div class='feed'>" + msg + "</div></li>";
+                $("#feedresults").prepend(feedtag);
             }
             else if(ser === "LiveFeed") {
-                // console.log(msg);
                 var splitmsgs = msg.split('-');
                 for (var i =1; i< splitmsgs.length; i++) {
-                    // console.log(splitmsgs[i]);
-                    var insSplit = splitmsgs[i].split('^')
-                    var something = "<li class='list-group-item'><div class='feed'><span class='userlabel'>" + insSplit[0] + "</span><br><span class='tweetlabel'>" + insSplit[1] + "</span></div></li>";
-                    $("#feedresults").prepend(something);
+                    var splitmsg = splitmsgs[i].split('^')
+                    var feedtag = "<li class='list-group-item row'><div class='feed col-lg-9'><span class='userlabel'>" + splitmsg[0] + "</span><br><span class='tweetlabel'>" + splitmsg[1] + "</span></div><input class='btn btn-primary col-lg-2' style='margin-top: 4px;border-radius: 18px;float: right;' name='retweet-button' type='submit' value='Retweet'></li>";
+                    $("#feedresults").prepend(feedtag);
                 }
             }
             else {
-                var something = "<li class='list-group-item'><div class='feed'><span class='userlabel'>" + uid + "</span><br><span class='tweetlabel'>" + msg + "</span></div></li>";
-                $("#feedresults").prepend(something);
+                var feedtag = "<li class='list-group-item row'><div class='feed col-lg-9'><span class='userlabel'>" + uid + "</span><br><span class='tweetlabel'>" + msg + "</span></div><input class='btn btn-primary col-lg-2' style='margin-top: 4px;border-radius: 18px;float: right;' name='retweet-button' onclick='handleRetweet(event)' value='Retweet'></form></li>";
+                $("#feedresults").prepend(feedtag);
             }
         }
 
-        function printToQuery(msg, uid, ser) {
-            // console.log(msg);
+        function printQuery(msg, uid, ser) {
             $("#searchresults").empty();
-            var splitmsgs = msg.split('-');
-            for (var i =1; i< splitmsgs.length; i++) {
-                // console.log(splitmsgs[i]);
-                var insSplit = splitmsgs[i].split('^')
-                if(insSplit.length > 1) {
-                    var something = "<li class='list-group-item'><div class='feed'><span class='userlabel'>" + insSplit[0] + "</span><br><span class='tweetlabel'>" + insSplit[1] + "</span></div></li>";
+            var temp = msg.split('-');
+            for (var i = 1; i < temp.length; i++) {
+                var splitmsg = temp[i].split('^')
+                if(splitmsg.length > 1) {
+                    var tweettag = "<li class='list-group-item'><div class='feed'><span class='userlabel'>" + splitmsg[0] + "</span><br><span class='tweetlabel'>" + splitmsg[1] + "</span></div></li>";
                 }
                 else {
-                    var something = "<li class='list-group-item'><div class='feed'><span class='tweetlabel'>" + insSplit[0] + "</span></div></li>";
+                    var tweettag = "<li class='list-group-item'><div class='feed'><span class='tweetlabel'>" + splitmsg[0] + "</span></div></li>";
                 }
-                $("#searchresults").append(something);
+                $("#searchresults").append(tweettag);
             }
         }
 
@@ -663,17 +528,15 @@
         function onMessage(evt)
         {
             var rep = JSON.parse(evt.data);
-            // console.log(rep);
             if(rep['service'] === "Follow") {
-                printToFeed(rep['message'],rep['userID'],rep['service']);
+                printFeed(rep['message'],rep['userID'],rep['service']);
             }
             else if(rep['service'] !== "LiveFeed") {
-                var spt = rep['message'].split('^');
-                // console.log(spt);
-                printToFeed(spt[1],spt[0],rep['service']);
+                var msg = rep['message'].split('^');
+                printFeed(msg[1],msg[0],rep['service']);
             }
             else {
-                printToFeed(rep['message'],rep['userID'],rep['service']);
+                printFeed(rep['message'],rep['userID'],rep['service']);
             }
         }
 
@@ -682,71 +545,73 @@
             writeToScreen('<span style="color: red;">ERROR:</span> ' + evt.data);
         }
 
-        async function postFormDataAsJson({ url, formData }) {
-            const plainFormData = Object.fromEntries(formData.entries());
-            const formDataJsonString = JSON.stringify(plainFormData);
-            // console.log(formDataJsonString);
+        function clearFormFields() {
+            $("#tweet-form")[0].reset();
+            $("#search-form")[0].reset();
+            $("#follow-form")[0].reset();
+        }
+
+        async function postFormDataAsJson({ requrl, formData }) {
+            const formDataEntries = Object.fromEntries(formData.entries());
+            const jsonFormData = JSON.stringify(formDataEntries);
             const fetchOptions = {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     "Accept": "application/json",
                 },
-                body: formDataJsonString,
+                body: jsonFormData,
             };
-            const response = await fetch(url, fetchOptions);
+            const response = await fetch(requrl, fetchOptions);
             if (!response.ok) {
-                const errorMessage = await response.text();
-                throw new Error(errorMessage);
+                const errorMsg = await response.text();
+                throw new Error(errorMsg);
             }
 	        return response.json();
         }
 
-        async function handleLoginSubmit(event) {
+        async function handleLogin(event) {
             event.preventDefault();
             const form = event.currentTarget;
-            const url = form.action;
+            const requrl = form.action;
             try {
                 const formData = new FormData(form);
-                const responseData = await postFormDataAsJson({ url, formData });
-                var v = JSON.parse(responseData);
-                if(v['code@'] !== "OK") {
-                    // console.log(v['message@']);
-                    $('#loginerror').text(v['message@']);
+                const responseData = await postFormDataAsJson({ requrl, formData });
+                var res = JSON.parse(responseData);
+                if(res['code@'] == "FAIL") {
+                    $('#loginfail').text(res['message@']);
                 }else {
                     $('#loginpage').hide();
-                    $('#mainpage').show();
-                    user = v['userID@'];
-                    $('#userlabel').text("Userid: " + user);
-                    $('#logoname').text(user);
-                    initWebSocket(v['userID@']);
+                    $('#homepage').show();
+                    userID = res['userID@'];
+                    $('#userlabel').text("Hello, " + userID);
+                    initWebSocket(res['userID@']);
                 }
             } catch (error) {
                 console.error(error);
             }
         }
 
-        async function handleRegisterSubmit(event) {
+        async function handleRegister(event) {
             event.preventDefault();
             const form = event.currentTarget;
-            const url = form.action;
+            const requrl = form.action;
             try {
                 const formData = new FormData(form);
-                const responseData = await postFormDataAsJson({ url, formData });
-                var v = JSON.parse(responseData);
-                if(v['code@'] !== "OK") {
-                    // console.log("NOT OK");
-                    $('#registererror').text(v['message@']);
+                const responseData = await postFormDataAsJson({ requrl, formData });
+                var res = JSON.parse(responseData);
+                if(res['code@'] == "FAIL") {
+                    $('#registerfail').text(res['message@']);
                 }else {
                     $("#login-form")[0].reset();
                     $("#register-form")[0].reset();
-                    $("#login-form").delay(100).fadeIn(100);
-                    $('#register-form-link').removeClass('active');
-                    $('#login-form-link').addClass('active');
-                    $("#register-form").fadeOut(100);
-                    $('#register-form-link').removeClass('active');
-                    $('#loginerror').text('');
-                    $('#registererror').text('');
+                    $("#login-form").delay(120).fadeIn(120);
+                    $('#register-link').removeClass('active');
+                    $('#login-link').addClass('active');
+                    $("#register-form").fadeOut(120);
+                    $('#register-link').removeClass('active');
+                    $('#loginfail').text('');
+                    $('#registerfail').text('');
                     $(this).addClass('active');
                 }
             } catch (error) {
@@ -754,36 +619,29 @@
             }
         }
 
-        function clearFields() {
-            $("#tweetform")[0].reset();
-            $("#searchform")[0].reset();
-            $("#followform")[0].reset();
-        }
-
         async function handleFormSubmit(event) {
             event.preventDefault();
             const form = event.currentTarget;
-            const url = form.action;
+            const requrl = form.action;
             try {
                 const formData = new FormData(form);
-                formData.append('userID',user);
-                const responseData = await postFormDataAsJson({ url, formData });
-                var v = JSON.parse(responseData);
-                clearFields();
-                if(v['code@'] !== "OK") {
-                    // console.log("NOT OK");
-                    window.alert(v['message@']);
+                formData.append('userID',userID);
+                const responseData = await postFormDataAsJson({ requrl, formData });
+                var res = JSON.parse(responseData);
+                clearFormFields();
+                if(res['code@'] == "FAIL") {
+                    window.alert(res['message@']);
                 }
                 else {
-                    if(v['service@'] === "Follow") {
-                        printToFeed(v['message@'], v['userID@'], v['service@']);
+                    if(res['service@'] === "Follow") {
+                        printFeed(res['message@'], res['userID@'], res['service@']);
                     }
-                    else if(v['service@'] !== "Query") {
-                        var temp = v['message@'].split('^');
-                        printToFeed(temp[1], temp[0], v['service@']);
+                    else if(res['service@'] !== "Query") {
+                        var msg = res['message@'].split('^');
+                        printFeed(msg[1], msg[0], res['service@']);
                     }
                     else {
-                        printToQuery(v['message@'], v['userID@'], v['service@']);
+                        printQuery(res['message@'], res['userID@'], res['service@']);
                     }
                 }
             } catch (error) {
@@ -791,7 +649,38 @@
             }
         }
 
-        async function GetQueryJson({ url }) {
+        async function handleRetweet(event) {
+            const form = event.currentTarget;
+            const requrl = "http://localhost:8080/retweet";
+            try {
+                const formData = new FormData();
+                formData.append('userID',userID);
+                var tweet = form.parentElement.firstElementChild.children[2].innerText;
+                formData.append('value',tweet);
+                const responseData = await postFormDataAsJson({ requrl, formData });
+                var res = JSON.parse(responseData);
+                clearFormFields();
+                if(res['code@'] == "FAIL") {
+                    window.alert(res['message@']);
+                }
+                else {
+                    if(res['service@'] === "Follow") {
+                        printFeed(res['message@'], res['userID@'], res['service@']);
+                    }
+                    else if(res['service@'] !== "Query") {
+                        var msg = res['message@'].split('^');
+                        printFeed(msg[1], msg[0], res['service@']);
+                    }
+                    else {
+                        printQuery(res['message@'], res['userID@'], res['service@']);
+                    }
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        async function GetQueryJson({ requrl }) {
             const fetchOptions = {
                 method: "GET",
                 headers: {
@@ -799,10 +688,10 @@
                     "Accept": "application/json",
                 },
             };
-            const response = await fetch(url, fetchOptions);
+            const response = await fetch(requrl, fetchOptions);
             if (!response.ok) {
-                const errorMessage = await response.text();
-                throw new Error(errorMessage);
+                const errorMsg = await response.text();
+                throw new Error(errorMsg);
             }
 	        return response.json();
         }
@@ -810,18 +699,17 @@
         async function handleQuerySubmit(event) {
             event.preventDefault();
             const form = event.currentTarget;
-            var url = form.action;
+            var requrl = form.action;
             try {
                 const formData = new FormData(form);
-                // formData.append('userID',user);
-                url = url + "/" + formData.get('value');
-                const v = await GetQueryJson({ url });
-                clearFields();
-                if(v['code'] !== "OK") {
-                    window.alert(v['message']);
+                requrl = requrl + "/" + formData.get('value');
+                const res = await GetQueryJson({ requrl });
+                clearFormFields();
+                if(res['code'] === "FAIL") {
+                    window.alert(res['message']);
                 }
                 else {
-                    printToQuery(v['message'], v['userID'], v['service']);
+                    printQuery(res['message'], res['userID'], res['service']);
                 }
             } catch (error) {
                 console.error(error);
@@ -829,14 +717,14 @@
         }
 
         const loginForm = document.getElementById("login-form");
-        loginForm.addEventListener("submit", handleLoginSubmit);
+        loginForm.addEventListener("submit", handleLogin);
         const registerForm = document.getElementById("register-form");
-        registerForm.addEventListener("submit", handleRegisterSubmit);
-        const tweetForm = document.getElementById("tweetform");
+        registerForm.addEventListener("submit", handleRegister);
+        const tweetForm = document.getElementById("tweet-form");
         tweetForm.addEventListener("submit", handleFormSubmit);
-        const followForm = document.getElementById("followform");
+        const followForm = document.getElementById("follow-form");
         followForm.addEventListener("submit", handleFormSubmit);
-        const searchForm = document.getElementById("searchform");
+        const searchForm = document.getElementById("search-form");
         searchForm.addEventListener("submit", handleQuerySubmit);
 </script>
 
